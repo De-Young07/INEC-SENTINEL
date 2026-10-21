@@ -19,3 +19,7 @@ data/nigeria_*
 data/opencellid*
 src/app.py
 src/generate_map.py
+
+tmp
+Deliverables
+scripts

@@ -70,3 +70,7 @@ desktop.ini
 # Deployment metadata
 .vercel/
 *.ipynb
+
+# Submission outputs and local render checks
+tmp/
+!Deliverables/*.pdf

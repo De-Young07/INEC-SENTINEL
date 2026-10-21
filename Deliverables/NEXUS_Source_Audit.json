@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "observation_period": "Not supplied with local extract",
+  "network_type": "Unverified",
+  "ookla": {
+    "source_rows": 9234,
+    "matched_rows": 9209,
+    "unmatched_rows": 25
+  },
+  "matching": {
+    "tile_method": "Tile coordinate intersects LGA polygon; multiple candidates resolved by sorted shapeID",
+    "tiles_with_multiple_candidates": 0,
+    "state_method": "Largest polygon intersection area in EPSG:6933; below 95% flagged for review",
+    "state_review_count": 0
+  },
+  "health_facilities_count": {
+    "valid_geometry_rows": 35774,
+    "matched_rows": 35772,
+    "unmatched_rows": 2,
+    "source": "grid3_nga_health_facilities_v3_0.gpkg"
+  },
+  "schools_count": {
+    "valid_geometry_rows": 6329,
+    "matched_rows": 6327,
+    "unmatched_rows": 2,
+    "source": "hotosm_nga_education_facilities_osm_gpkg/education_facilities.gpkg"
+  },
+  "facility_register": {
+    "GRID3": {
+      "source_records": 41778,
+      "usable_geometry": 35774,
+      "excluded_geometry": 6004,
+      "file": "grid3_nga_health_facilities_v3_0.gpkg"
+    },
+    "HOT-health": {
+      "source_records": 7736,
+      "usable_geometry": 7736,
+      "excluded_geometry": 0,
+      "file": "hotosm_nga_health_facilities_osm_gpkg/health_facilities.gpkg"
+    },
+    "HOT-education": {
+      "source_records": 6329,
+      "usable_geometry": 6329,
+      "excluded_geometry": 0,
+      "file": "hotosm_nga_education_facilities_osm_gpkg/education_facilities.gpkg"
+    },
+    "reconciliation": {
+      "method": "Exact normalized name within 200 m; candidates for review, not confirmed merges",
+      "candidates": 914,
+      "records": 49839,
+      "observation_date": "Unverified; file refresh does not establish site freshness"
+    }
+  }
+}

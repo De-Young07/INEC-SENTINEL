@@ -11,7 +11,7 @@ assert next(metric for metric in app.metric if metric.label == 'Proposed visits'
 next(button for button in app.button if button.label == 'Show suggested next step').click().run()
 assert not app.exception
 assert len(app.session_state['rehearsals']) == 1
-next(field for field in app.text_input if field.label == 'Find an LGA').set_value('NO_MATCH_123').run()
+next(field for field in app.text_input if field.label == 'Find an LGA or state').set_value('NO_MATCH_123').run()
 assert not app.exception
 assert any('No areas match' in warning.value for warning in app.warning)
 print('PASS: initial render, zero budget, rehearsal submission, empty filter')

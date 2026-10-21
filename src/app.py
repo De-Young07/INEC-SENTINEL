@@ -56,11 +56,11 @@ except (ValueError, OSError) as exc:
     st.stop()
 
 st.sidebar.header('Find your area')
-query = st.sidebar.text_input('Find an LGA', placeholder='Type part of a name')
+query = st.sidebar.text_input('Find an LGA or state', placeholder='Type part of a name')
 all_statuses = ['Insufficient evidence', 'Poor observed performance', 'Review performance', 'Lower observed concern']
 statuses = st.sidebar.multiselect('Evidence to include', all_statuses, default=all_statuses)
 ranked = screen(evidence)
-scope = ranked[ranked.evidence_status.isin(statuses) & ranked.shapeName.str.contains(query, case=False, regex=False, na=False)].copy()
+scope = ranked[ranked.evidence_status.isin(statuses) & (ranked.shapeName.str.contains(query, case=False, regex=False, na=False) | ranked.get('state_name', pd.Series('', index=ranked.index)).str.contains(query, case=False, regex=False, na=False))].copy()
 st.sidebar.caption('These filters apply to the map, visit plan and downloads.')
 st.sidebar.markdown('**How to use this planner**\n\n1. Review the evidence.\n2. Choose a visit budget.\n3. Download your brief.')
 metrics = st.columns(3)
@@ -83,11 +83,12 @@ with overview:
         key = str(feature['properties']['shapeID'])
         if key in lookup:
             record = lookup[key]
-            features.append({'type': 'Feature', 'geometry': feature['geometry'], 'properties': {'name': record['shapeName'], 'status': record['evidence_status'], 'color': colors[record['evidence_status']]}})
-    st.pydeck_chart(pdk.Deck(map_style=None, initial_view_state=pdk.ViewState(latitude=9.1, longitude=8.7, zoom=5), layers=[pdk.Layer('GeoJsonLayer', {'type': 'FeatureCollection', 'features': features}, get_fill_color='properties.color', get_line_color=[245, 247, 250], line_width_min_pixels=.5, pickable=True)], tooltip={'text': '{name}\n{status}'}), height=430)
+            features.append({'type': 'Feature', 'geometry': feature['geometry'], 'properties': {'name': record['shapeName'], 'status': record['evidence_status'], 'state': record.get('state_name', 'Unknown'), 'download': str(round(record.get('mean_d_mbps', float('nan')),2)), 'upload': str(round(record['mean_u_mbps'],2)), 'latency': str(round(record['mean_lat_ms'],1)), 'tiles': str(record['tiles_count']), 'tests': str(record['total_tests']), 'color': colors[record['evidence_status']]}})
+    st.pydeck_chart(pdk.Deck(map_style=None, initial_view_state=pdk.ViewState(latitude=9.1, longitude=8.7, zoom=5), layers=[pdk.Layer('GeoJsonLayer', {'type': 'FeatureCollection', 'features': features}, get_fill_color='properties.color', get_line_color=[245, 247, 250], line_width_min_pixels=.5, pickable=True)], tooltip={'text': '{name} · {state}\n{status}\nDownload: {download} Mbps\nUpload: {upload} Mbps\nLatency: {latency} ms\nTiles: {tiles} · Tests: {tests}\nHistorical LGA averages; not site measurements'}), height=430)
     st.caption('If the map cannot load, use the evidence table below. It contains the same filtered areas.')
     chosen_id = st.selectbox('Inspect an LGA', scope.shapeID.tolist(), format_func=lambda key: f"{lookup[key]['shapeName']} · {key}")
     row = lookup[chosen_id]
+    st.caption(f"{row.get('state_name', 'Unknown state')} | {row.get('state_match_status', 'Unverified')} | State overlap: {row.get('state_overlap_pct', 'Unknown')}%")
     st.write(f"**{row['evidence_status']}** — {row['next_action']}.")
     a, b, c = st.columns(3)
     a.metric('Observed tiles', int(row['tiles_count']))
