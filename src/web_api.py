@@ -163,7 +163,12 @@ def add_observation(body: Observation, x_sentinel_token: str | None = Header(def
 
 @app.get('/api/monitoring')
 def monitor(site_id: str | None = None, x_sentinel_token: str | None = Header(default=None)):
-    return monitoring.snapshot(site_id, public_only=bool(os.environ.get('VERCEL')) and not authorized(x_sentinel_token))
+    try:
+        return monitoring.snapshot(site_id, public_only=bool(os.environ.get('VERCEL')) and not authorized(x_sentinel_token))
+    except RuntimeError as exc:
+        if os.environ.get('VERCEL') and not os.environ.get('DATABASE_URL'):
+            raise HTTPException(503, 'Shared monitoring setup is pending. The evidence map and planning tools remain available.') from exc
+        raise
 
 
 class Acknowledgment(BaseModel):

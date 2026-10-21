@@ -59,3 +59,9 @@ class OperationsApiTests(unittest.TestCase):
             with patch('src.web_api.monitoring.record', return_value={'duplicate':False}) as record:
                 self.assertEqual(self.client.post('/api/observations',json=data,headers={'X-Sentinel-Token':'test-only-secret'}).status_code,200)
                 record.assert_called_once()
+
+    def test_hosted_missing_database_is_explicit(self):
+        with patch.dict(os.environ, {'VERCEL':'1', 'DATABASE_URL':''}):
+            response = self.client.get('/api/monitoring')
+            self.assertEqual(response.status_code,503)
+            self.assertIn('setup is pending',response.json()['detail'])
