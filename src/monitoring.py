@@ -14,6 +14,16 @@ def now():
 
 @contextmanager
 def connect():
+    if os.environ.get('DATABASE_URL'):
+        if __package__:
+            from .postgres_store import connect as postgres_connect
+        else:
+            from postgres_store import connect as postgres_connect
+        with postgres_connect() as db:
+            yield db
+        return
+    if os.environ.get('VERCEL'):
+        raise RuntimeError('DATABASE_URL is required on Vercel; ephemeral storage is not supported')
     path = Path(os.environ.get('SENTINEL_DB', str(ROOT / 'data/monitoring.sqlite3')))
     path.parent.mkdir(parents=True, exist_ok=True)
     db = sqlite3.connect(path, timeout=15)
@@ -114,10 +124,12 @@ def escalate():
                     db.execute('INSERT INTO audit(incident_id,at,action,actor,note) VALUES(?,?,?,?,?)', (row['id'], now(), 'escalated', 'rule-engine', 'Same configured recipients; regional routing requires configuration design'))
 
 
-def snapshot(site_id=None):
+def snapshot(site_id=None, public_only=False):
     with connect() as db:
-        observations = db.execute('SELECT * FROM observations ' + ('WHERE site_id=? ' if site_id else '') + 'ORDER BY observed_at DESC LIMIT 100', (site_id,) if site_id else ()).fetchall()
-        incidents = db.execute('SELECT * FROM incidents ' + ('WHERE site_id=? ' if site_id else '') + 'ORDER BY id DESC LIMIT 100', (site_id,) if site_id else ()).fetchall()
-        outbox = db.execute('SELECT * FROM outbox ORDER BY id DESC LIMIT 100').fetchall()
-        audit = db.execute('SELECT * FROM audit ORDER BY id DESC LIMIT 100').fetchall()
+        clauses = (["mode='demo'"] if public_only else []) + (['site_id=?'] if site_id else [])
+        where = 'WHERE ' + ' AND '.join(clauses) + ' ' if clauses else ''
+        observations = db.execute('SELECT * FROM observations ' + where + 'ORDER BY observed_at DESC LIMIT 100', (site_id,) if site_id else ()).fetchall()
+        incidents = db.execute('SELECT * FROM incidents ' + where + 'ORDER BY id DESC LIMIT 100', (site_id,) if site_id else ()).fetchall()
+        outbox = db.execute('SELECT * FROM outbox ' + ("WHERE mode='demo' " if public_only else '') + 'ORDER BY id DESC LIMIT 100').fetchall()
+        audit = [] if public_only else db.execute('SELECT * FROM audit ORDER BY id DESC LIMIT 100').fetchall()
     return {'observations': [dict(r) for r in observations], 'incidents': [dict(r) for r in incidents], 'outbox': [dict(r) for r in outbox], 'audit': [dict(r) for r in audit], 'updated_at': now(), 'delivery': 'Configured for external delivery' if os.environ.get('SENTINEL_SEND') == '1' else 'Preview only — no messages sent'}

@@ -186,7 +186,7 @@ python -m venv .venv
 source .venv/bin/activate
 
 # Install required dependencies
-pip install -r requirements.txt
+pip install -r requirements-local.txt
 ```
 
 ### 3. Launching the Applications

@@ -66,3 +66,7 @@ desktop.ini
 .idea/
 *.swp
 *.swo
+
+# Deployment metadata
+.vercel/
+*.ipynb

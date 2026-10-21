@@ -46,3 +46,16 @@ class OperationsApiTests(unittest.TestCase):
         self.assertEqual(result.json()['received_bytes'],65536)
         self.assertEqual(self.client.post('/api/probe-upload',content=b'0'*262145,headers=headers).status_code,413)
         self.assertEqual(self.client.post('/api/probe-upload',content=b'',headers=headers).status_code,422)
+
+    def test_hosted_monitoring_filters_and_requires_token(self):
+        with patch.dict(os.environ, {'VERCEL':'1'}), patch('src.web_api.monitoring.snapshot', return_value={}) as snapshot:
+            self.assertEqual(self.client.get('/api/monitoring').status_code,200)
+            snapshot.assert_called_with(None, public_only=True)
+            self.client.get('/api/monitoring',headers={'X-Sentinel-Token':'test-only-secret'})
+            snapshot.assert_called_with(None, public_only=False)
+            data={'event_id':'demo1','site_id':'test:1','mode':'demo','observed_at':datetime.now(timezone.utc).isoformat(),'success':False,'seconds':3}
+            self.assertEqual(self.client.post('/api/observations',json=data).status_code,403)
+            self.assertEqual(self.client.post('/api/incidents/1/acknowledge',json={'actor':'Tester','note':'Checking'}).status_code,403)
+            with patch('src.web_api.monitoring.record', return_value={'duplicate':False}) as record:
+                self.assertEqual(self.client.post('/api/observations',json=data,headers={'X-Sentinel-Token':'test-only-secret'}).status_code,200)
+                record.assert_called_once()

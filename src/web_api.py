@@ -52,6 +52,9 @@ def get_evidence():
 @app.get('/api/boundaries')
 @lru_cache(maxsize=1)
 def boundaries():
+    prepared = ROOT / 'data/sentinel_boundaries.json'
+    if prepared.exists():
+        return json.loads(prepared.read_text(encoding='utf-8'))
     # Display geometry only: analytical geometries remain untouched.
     import geopandas as gpd
     geo = gpd.read_file(ROOT / 'data/sentinel_evidence.geojson')[['shapeID', 'geometry']]
@@ -116,10 +119,19 @@ class Observation(BaseModel):
     note: str = Field(default='', max_length=1000)
 
 
-def require_token(token):
+def authorized(token):
     expected = os.environ.get('SENTINEL_INGEST_TOKEN', '')
-    if not expected or not secrets.compare_digest(token or '', expected):
-        raise HTTPException(403, 'Field writes require the configured operator token')
+    return bool(expected) and secrets.compare_digest(token or '', expected)
+
+
+def require_token(token):
+    if not authorized(token):
+        raise HTTPException(403, 'Enter the configured operator token to write monitoring records')
+
+
+@app.get('/api/config')
+def config():
+    return {'hosted': bool(os.environ.get('VERCEL')), 'storage': 'postgres' if os.environ.get('DATABASE_URL') else 'sqlite'}
 
 
 @app.post('/api/probe-upload')
@@ -137,7 +149,7 @@ async def probe_upload(request: Request, x_sentinel_token: str | None = Header(d
 
 @app.post('/api/observations')
 def add_observation(body: Observation, x_sentinel_token: str | None = Header(default=None)):
-    if body.mode == 'field':
+    if body.mode == 'field' or os.environ.get('VERCEL'):
         require_token(x_sentinel_token)
     if body.site_id not in set(facilities().site_id):
         raise HTTPException(422, 'Choose a registered facility')
@@ -150,8 +162,8 @@ def add_observation(body: Observation, x_sentinel_token: str | None = Header(def
 
 
 @app.get('/api/monitoring')
-def monitor(site_id: str | None = None):
-    return monitoring.snapshot(site_id)
+def monitor(site_id: str | None = None, x_sentinel_token: str | None = Header(default=None)):
+    return monitoring.snapshot(site_id, public_only=bool(os.environ.get('VERCEL')) and not authorized(x_sentinel_token))
 
 
 class Acknowledgment(BaseModel):
@@ -161,6 +173,8 @@ class Acknowledgment(BaseModel):
 
 @app.post('/api/incidents/{incident_id}/acknowledge')
 def ack(incident_id: int, body: Acknowledgment, x_sentinel_token: str | None = Header(default=None)):
+    if os.environ.get('VERCEL'):
+        require_token(x_sentinel_token)
     with monitoring.connect() as db:
         row = db.execute('SELECT mode FROM incidents WHERE id=?', (incident_id,)).fetchone()
     if row and row['mode'] == 'field':

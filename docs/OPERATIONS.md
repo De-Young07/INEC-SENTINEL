@@ -7,7 +7,7 @@ Read [the tutorial](TUTORIAL.md) first for the user workflow. [Reference](REFERE
 Use Python 3.11 and a terminal opened in the project folder. The downloaded source GeoPackages and boundary GeoJSON must be present for rebuilding. Existing prepared files are sufficient to run the apps.
 
 ```powershell
-python -m pip install -r requirements.txt
+python -m pip install -r requirements-local.txt
 python -m uvicorn src.web_api:app --host 127.0.0.1 --port 8600
 ```
 
@@ -114,3 +114,43 @@ python -m src.build_guide
 ```
 
 This combines the four Markdown documents into `web/guide.html`. Open `/guide.html` and print to PDF. The Markdown documents remain the editable source. Update both the guide and implemented-status notes whenever features change.
+
+
+## Hosted deployment: Vercel and PostgreSQL
+
+The web frontend and FastAPI run together on Vercel through root `app.py`.
+Streamlit remains a separate local interface: install `requirements-local.txt`
+and run `streamlit run src/app.py`. Vercel does not host the Streamlit process.
+The small runtime dependencies are in `requirements.txt` and `pyproject.toml`.
+Precomputed `data/sentinel_boundaries.json` avoids loading GeoPandas in requests.
+Regenerate that display file when analytical boundaries change.
+
+With DATABASE_URL set, monitoring uses PostgreSQL in the private sentinel schema.
+Without it, local development uses SQLite. Vercel refuses to use temporary SQLite:
+otherwise incident history would disappear across requests or deployments.
+Install sql/schema.sql once, provision the restricted sentinel_runtime login,
+then apply sql/runtime_grants.sql. Keep this schema outside Supabase's exposed
+Data API schemas. Set DATABASE_URL to the transaction pooler's connection URI
+with SSL required and the runtime credentials; prepared statements are disabled.
+Set SENTINEL_INGEST_TOKEN to a strong server-side secret and SENTINEL_SEND=0.
+Never put these secrets in Git, frontend JavaScript, screenshots or the guide.
+
+The hosted public view shows demo observations, incidents and notification previews.
+All hosted writes require the operator token, including demo rehearsals.
+Authorized requests can also see field evidence and audit history. Enter the token
+on the monitoring page and select Refresh now; it lives only in that page's memory.
+This shared token is a pilot control, not individual identity or enterprise RBAC.
+Demo notes must be suitable for public viewing. Field reports are not public.
+
+The interface polls every 15 seconds; updates require newly submitted reports.
+Historical Ookla and facility data do not become real-time through deployment.
+An external scheduled worker must run `python -m src.delivery` with the same
+DATABASE_URL and provider configuration to dispatch alerts. Vercel web requests
+alone do not run this worker. Verify the delivery module's CLI before scheduling.
+Leave sending disabled until recipients, provider credentials and the operating
+schedule are approved. Provider acceptance does not prove delivery.
+
+All pilot state transitions currently share a PostgreSQL transaction advisory lock.
+This preserves consistency across serverless instances but serializes writes.
+Benchmark before scaling; site-level locking and dedicated queued workers are
+future work. Managed storage alone does not establish production readiness.
