@@ -1,0 +1,68 @@
+# Environment & Secrets
+.env
+.env.local
+.env.*
+!.env.example
+
+# Python & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+venv/
+.venv/
+env/
+ENV/
+
+# Databases & Runtime State
+data/*.sqlite3*
+data/probe_queue*
+*.log
+
+# Heavy Raw Datasets & Intermediate GIS Files
+# (Runtime assets are stored in data/sentinel_evidence.* and data/facilities.csv)
+*.gpkg
+*.tif
+*.tiff
+*.zip
+*.tar.gz
+findings/
+hotosm_nga_education_facilities_osm_gpkg/
+hotosm_nga_health_facilities_osm_gpkg/
+interactive_electoral_map.html
+nga_lga_boundaries.geojson
+nga_state_boundaries.geojson
+data/opencellid_621.csv*
+
+# Documents & Binary Reports (Markdown docs in docs/ & md/ are tracked)
+*.docx
+*.pptx
+*.xlsx
+*.pdf
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE & Tooling
+.vscode/
+.idea/
+*.swp
+*.swo

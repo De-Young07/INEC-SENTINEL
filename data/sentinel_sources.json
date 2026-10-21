@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "observation_period": "Not supplied with local extract",
+  "network_type": "Unverified",
+  "ookla": {
+    "source_rows": 9234,
+    "matched_rows": 9209,
+    "unmatched_rows": 25
+  },
+  "health_facilities_count": {
+    "valid_geometry_rows": 35774,
+    "matched_rows": 35772,
+    "unmatched_rows": 2,
+    "source": "grid3_nga_health_facilities_v3_0.gpkg"
+  },
+  "schools_count": {
+    "valid_geometry_rows": 6329,
+    "matched_rows": 6327,
+    "unmatched_rows": 2,
+    "source": "hotosm_nga_education_facilities_osm_gpkg/education_facilities.gpkg"
+  }
+}

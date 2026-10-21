@@ -1,0 +1,26 @@
+{
+  "GRID3": {
+    "source_records": 41778,
+    "usable_geometry": 35774,
+    "excluded_geometry": 6004,
+    "file": "grid3_nga_health_facilities_v3_0.gpkg"
+  },
+  "HOT-health": {
+    "source_records": 7736,
+    "usable_geometry": 7736,
+    "excluded_geometry": 0,
+    "file": "hotosm_nga_health_facilities_osm_gpkg/health_facilities.gpkg"
+  },
+  "HOT-education": {
+    "source_records": 6329,
+    "usable_geometry": 6329,
+    "excluded_geometry": 0,
+    "file": "hotosm_nga_education_facilities_osm_gpkg/education_facilities.gpkg"
+  },
+  "reconciliation": {
+    "method": "Exact normalized name within 200 m; candidates for review, not confirmed merges",
+    "candidates": 914,
+    "records": 49839,
+    "observation_date": "Unverified; file refresh does not establish site freshness"
+  }
+}
