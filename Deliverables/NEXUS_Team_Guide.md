@@ -2,9 +2,21 @@
 
 Prepared for Quadri Adebisi, Glory Akanbi, Gboyega Pelumi Stephen and Neneh Precious Egbo-Egbo on 21 October 2026. Speaking assignments below are suggestions, not claims about individual contributions.
 
-## What we are presenting
+## Why we took this direction
 
-We built a connectivity evidence and field-verification planner. The hackathon asks where connectivity improvements should be prioritized. Our contribution is to combine supplied Ookla observations with administrative boundaries and public-service locations, show both weak observations and missing evidence, and turn them into an affordable investigation plan. Electoral logistics is a motivating use case; health and education give it wider digital-inclusion relevance. SENTINEL does not conduct voting, transmit official results or certify BVAS readiness.
+Our starting point was election result transmission. We wanted to ask a practical question: before a team needs to upload a time-sensitive document, where should it check connectivity and prepare for difficulties? That is why upload speed and latency became central to the project.
+
+The hackathon gave us Ookla measurements, but those measurements alone could not tell us which public-service locations deserved attention. We added health facilities and schools because the ability to send information matters beyond an election. These datasets gave us places to investigate and a way to explain why gaps in the evidence matter. We are not treating schools as an official polling-unit register.
+
+The data also changed what we could responsibly promise. Some LGAs had no matched observations, and several concerning results came from only one tile. We therefore chose to help teams plan verification visits and record what they find. We could not justify claiming that the map predicts transmission failures or identifies exactly where a new tower should be built.
+
+That decision explains the monitoring feature too. A map gives a team a starting point; a fresh report, an assigned officer and a recovery record help it follow through. SENTINEL brings those steps together. It does not conduct voting, transmit official election results or certify BVAS readiness.
+
+## How to introduce it in your own words
+
+“We started with a question about election uploads: how can a team know where to check connectivity before it needs it? As we worked with the data, we saw that the same question matters for clinics and schools. So we built a tool that shows the available evidence, makes the gaps visible, and helps a team decide where to visit and what to follow up. We are careful about what we claim because many places have very few observations.”
+
+Use this as a speaking prompt, not a passage to memorize. Each member can explain the part they are demonstrating in their own words. Do not imply that the team has carried out field visits or worked with INEC unless that has actually happened.
 
 ## How the data becomes a map
 
